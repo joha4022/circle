@@ -38,7 +38,7 @@ export default async function DashboardPage() {
   return (
     <main>
       <section className="hero">
-        <p className="kicker">Your command center</p>
+        <p className="kicker">Your Circle dashboard</p>
         <h1>Welcome back, {me.name ?? me.email}</h1>
         <p className="muted">Capture your address + birthday, then create circles to kick off private gift planning.</p>
       </section>

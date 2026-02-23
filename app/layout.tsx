@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { SignOutButton } from "@/components/sign-out-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import Providers from "@/app/providers";
 import { authOptions } from "@/lib/auth";
 import "./globals.css";
@@ -15,7 +16,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = await getServerSession(authOptions);
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
           <nav className="nav">
@@ -23,8 +24,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               circle
             </Link>
             <div className="nav-links">
-              <Link href="/dashboard">Dashboard</Link>
-              {session?.user ? <SignOutButton /> : <Link className="button" href="/login">Login</Link>}
+              <Link className="button ghost" href="/dashboard">Dashboard</Link>
+              <ThemeToggle />
+              {session?.user ? <SignOutButton /> : <Link className="button" href="/login">Log in</Link>}
             </div>
           </nav>
           {children}

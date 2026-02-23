@@ -13,9 +13,9 @@ export default async function LoginPage() {
   return (
     <main>
       <section className="card" style={{ maxWidth: 460, margin: "1.5rem auto" }}>
-        <p className="kicker">Authentication</p>
+        <p className="kicker">Sign in</p>
         <h1 style={{ marginTop: 0 }}>Sign in to Circle</h1>
-        <p className="muted">Use your Google account to join a friend group and start birthday planning.</p>
+        <p className="muted">Use your Google account to access groups, chat threads, and birthday gift voting.</p>
         <SignInButton />
       </section>
     </main>

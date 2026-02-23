@@ -45,7 +45,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
   return (
     <main>
       <section className="hero">
-        <p className="kicker">Group view</p>
+        <p className="kicker">Group details</p>
         <h1>{group.name}</h1>
         <p className="muted">Members: {group.members.map((m) => m.user.name ?? m.user.email).join(", ")}</p>
       </section>
