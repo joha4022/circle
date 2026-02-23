@@ -1,0 +1,175 @@
+:root {
+  --bg-1: #fff7ef;
+  --bg-2: #f4faf8;
+  --ink: #1b1c22;
+  --muted: #525764;
+  --brand: #ef4a23;
+  --brand-2: #119d7f;
+  --card: #ffffff;
+  --line: #d8dde6;
+  --shadow: 0 10px 35px rgba(27, 28, 34, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: "Avenir Next", "Nunito Sans", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(239, 74, 35, 0.12), transparent 22%),
+    radial-gradient(circle at 85% 20%, rgba(17, 157, 127, 0.16), transparent 18%),
+    linear-gradient(140deg, var(--bg-1), var(--bg-2));
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  font-size: 1.2rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.button,
+button {
+  border: none;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  padding: 0.65rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button.alt,
+button.alt {
+  background: var(--brand);
+}
+
+.button.ghost,
+button.ghost {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--line);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid rgba(216, 221, 230, 0.8);
+  border-radius: 18px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.hero {
+  padding: 2rem 0.5rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.05;
+}
+
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand-2);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+form {
+  display: grid;
+  gap: 0.65rem;
+}
+
+label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+input,
+textarea,
+select {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  background: #fff;
+}
+
+.chat {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.msg {
+  background: #f7f9fc;
+  border: 1px solid #e7ebf2;
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  background: rgba(17, 157, 127, 0.15);
+  color: #0d6f5a;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+@media (max-width: 850px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding-top: 1rem;
+  }
+}

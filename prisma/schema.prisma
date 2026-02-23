@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String?  @unique
+  emailVerified DateTime?
+  image         String?
+  birthday      DateTime?
+  addressLine1  String?
+  addressLine2  String?
+  city          String?
+  state         String?
+  postalCode    String?
+  country       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  accounts             Account[]
+  sessions             Session[]
+  memberships          GroupMember[]
+  birthdayDiscussions  Discussion[]           @relation("BirthdayPerson")
+  messages             Message[]
+  votes                Vote[]
+  discussionMembership DiscussionParticipant[]
+}
+
+model Group {
+  id          String      @id @default(cuid())
+  name        String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  members     GroupMember[]
+  discussions Discussion[]
+}
+
+model GroupMember {
+  groupId String
+  userId  String
+  role    GroupRole @default(MEMBER)
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+}
+
+model Discussion {
+  id                   String           @id @default(cuid())
+  groupId              String
+  birthdayPersonId     String
+  eventDate            DateTime
+  title                String
+  status               DiscussionStatus @default(OPEN)
+  selectedGiftOptionId String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  group               Group                   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  birthdayPerson      User                    @relation("BirthdayPerson", fields: [birthdayPersonId], references: [id], onDelete: Cascade)
+  participants        DiscussionParticipant[]
+  messages            Message[]
+  giftOptions         GiftOption[]
+  selectedGiftOption  GiftOption?             @relation("SelectedGift", fields: [selectedGiftOptionId], references: [id], onDelete: SetNull)
+  giftOrder           GiftOrder?
+
+  @@index([groupId])
+}
+
+model DiscussionParticipant {
+  discussionId String
+  userId       String
+
+  discussion Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([discussionId, userId])
+}
+
+model Message {
+  id           String   @id @default(cuid())
+  discussionId String
+  authorId     String
+  body         String
+  createdAt    DateTime @default(now())
+
+  discussion Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  author     User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([discussionId, createdAt])
+}
+
+model GiftOption {
+  id                 String     @id @default(cuid())
+  discussionId       String
+  title              String
+  notes              String?
+  estimatedCostCents Int?
+  createdAt          DateTime   @default(now())
+
+  discussion            Discussion   @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  votes                 Vote[]
+  selectedInDiscussions Discussion[] @relation("SelectedGift")
+  orders                GiftOrder[]
+
+  @@index([discussionId])
+}
+
+model Vote {
+  id           String   @id @default(cuid())
+  giftOptionId String
+  voterId      String
+  createdAt    DateTime @default(now())
+
+  giftOption GiftOption @relation(fields: [giftOptionId], references: [id], onDelete: Cascade)
+  voter      User       @relation(fields: [voterId], references: [id], onDelete: Cascade)
+
+  @@unique([giftOptionId, voterId])
+}
+
+model GiftOrder {
+  id              String      @id @default(cuid())
+  discussionId    String      @unique
+  giftOptionId    String
+  paymentProvider String
+  paymentStatus   PaymentStatus @default(PENDING)
+  createdAt       DateTime    @default(now())
+
+  discussion Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  giftOption GiftOption @relation(fields: [giftOptionId], references: [id], onDelete: Restrict)
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum GroupRole {
+  OWNER
+  MEMBER
+}
+
+enum DiscussionStatus {
+  OPEN
+  DECIDED
+  ORDERED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}

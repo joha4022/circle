@@ -14,6 +14,7 @@ pnpm-debug.log*
 # Environment
 .env
 .env.*
+!.env.example
 
 # Dependencies
 node_modules/
@@ -24,3 +25,10 @@ build/
 coverage/
 .cache/
 .turbo/
+/.next/
+/.vercel/
+*.tsbuildinfo
+prisma/dev.db
+prisma/dev.db-journal
+prisma/prisma/dev.db
+prisma/prisma/dev.db-journal
