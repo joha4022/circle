@@ -36,6 +36,27 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return Response.json({ error: "Gift option not found" }, { status: 404 });
   }
 
+  const existingVoteForOption = await prisma.vote.findUnique({
+    where: {
+      giftOptionId_voterId: {
+        giftOptionId: parsed.data.giftOptionId,
+        voterId: userId
+      }
+    }
+  });
+
+  if (existingVoteForOption) {
+    await prisma.vote.delete({
+      where: {
+        giftOptionId_voterId: {
+          giftOptionId: parsed.data.giftOptionId,
+          voterId: userId
+        }
+      }
+    });
+    return Response.json({ ok: true, voted: false });
+  }
+
   await prisma.vote.deleteMany({
     where: {
       voterId: userId,
@@ -50,5 +71,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
   });
 
-  return Response.json({ ok: true });
+  return Response.json({ ok: true, voted: true });
 }

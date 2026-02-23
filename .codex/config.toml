@@ -39,3 +39,6 @@ description = "Reviews code for security issues, auth bypass, and PII exposure."
 
 [agents.devops_ci]
 description = "Manages CI/CD, linting, testing, migrations in production."
+
+[agents.designer]
+description = "Senior character designer specializing in cute Discord-style mascot designs."

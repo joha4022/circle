@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
-import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-menu";
 import Providers from "@/app/providers";
 import { authOptions } from "@/lib/auth";
 import "./globals.css";
@@ -19,17 +19,31 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <nav className="nav">
-            <Link className="brand" href="/">
-              circle
-            </Link>
-            <div className="nav-links">
-              <Link className="button ghost" href="/dashboard">Dashboard</Link>
-              <ThemeToggle />
-              {session?.user ? <SignOutButton /> : <Link className="button" href="/login">Log in</Link>}
-            </div>
-          </nav>
-          {children}
+          <div className="app-shell">
+            <header className="app-topbar">
+              <nav className="nav topbar-inner">
+                <Link className="brand" href="/">
+                  circle
+                </Link>
+                <div className="nav-links nav-tabs">
+                  <Link className="tab-link" href="/groups">Groups</Link>
+                  <Link className="tab-link" href="/chats">Chats</Link>
+                  {session?.user ? (
+                    <UserMenu
+                      userName={session.user.name ?? undefined}
+                      userEmail={session.user.email ?? undefined}
+                      userImage={session.user.image ?? undefined}
+                      avatarSeed={session.user.id ?? session.user.email ?? "circle-user"}
+                    />
+                  ) : (
+                    <Link className="button alt" href="/login">Log in</Link>
+                  )}
+                </div>
+              </nav>
+            </header>
+            {children}
+          </div>
+          <ThemeToggle />
         </Providers>
       </body>
     </html>

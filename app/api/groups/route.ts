@@ -4,6 +4,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { getNextBirthdayDate } from "@/lib/date";
 import { prisma } from "@/lib/db";
+import { getRandomProfilePackImage } from "@/lib/profile-pack";
 
 const groupSchema = z.object({
   name: z.string().min(2),
@@ -40,7 +41,8 @@ export async function POST(req: Request) {
     await prisma.user.createMany({
       data: usersToCreate.map((email) => ({
         email,
-        name: email.split("@")[0]
+        name: email.split("@")[0],
+        image: getRandomProfilePackImage()
       }))
     });
   }

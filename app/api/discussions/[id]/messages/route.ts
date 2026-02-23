@@ -28,13 +28,31 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await prisma.message.create({
+  const message = await prisma.message.create({
     data: {
       discussionId: id,
       authorId: userId,
       body: parsed.data.body
+    },
+    include: {
+      author: {
+        select: {
+          name: true,
+          email: true,
+          image: true
+        }
+      }
     }
   });
 
-  return Response.json({ ok: true });
+  return Response.json({
+    ok: true,
+    message: {
+      id: message.id,
+      body: message.body,
+      createdAt: message.createdAt.toISOString(),
+      authorName: message.author.name ?? message.author.email ?? "Circle user",
+      authorImage: message.author.image ?? null
+    }
+  });
 }

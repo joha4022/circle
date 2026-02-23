@@ -32,7 +32,14 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
     include: {
       members: { include: { user: true } },
       discussions: {
-        include: { birthdayPerson: true, giftOptions: { include: { votes: true } } },
+        include: {
+          birthdayPerson: true,
+          giftOptions: { include: { votes: true } },
+          participants: {
+            where: { userId: session.user.id },
+            select: { userId: true }
+          }
+        },
         orderBy: { eventDate: "asc" }
       }
     }
@@ -41,6 +48,8 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
   if (!group) {
     notFound();
   }
+
+  const visibleDiscussions = group.discussions.filter((d) => d.participants.length > 0);
 
   return (
     <main>
@@ -54,8 +63,8 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
         <article className="card" style={{ gridColumn: "span 12" }}>
           <h2>Birthday planning threads</h2>
           <div className="grid">
-            {group.discussions.length === 0 ? <p className="muted">No discussions yet.</p> : null}
-            {group.discussions.map((d) => (
+            {visibleDiscussions.length === 0 ? <p className="muted">No discussions available for you right now.</p> : null}
+            {visibleDiscussions.map((d) => (
               <div className="card" style={{ gridColumn: "span 6" }} key={d.id}>
                 <p className="badge">{d.status}</p>
                 <h3>{d.title}</h3>
