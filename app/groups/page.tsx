@@ -34,6 +34,21 @@ export default async function GroupsPage() {
     include: {
       group: {
         include: {
+          members: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  image: true,
+                  name: true,
+                  email: true
+                }
+              }
+            },
+            orderBy: {
+              userId: "asc"
+            }
+          },
           _count: { select: { members: true, discussions: true } }
         }
       }
@@ -61,7 +76,26 @@ export default async function GroupsPage() {
         ) : (
           memberships.map((membership) => (
             <article className="card" style={{ gridColumn: "span 6" }} key={membership.groupId}>
-              <h3>{membership.group.name}</h3>
+              <div className="group-heading">
+                <h3>{membership.group.name}</h3>
+                <div className="group-avatar-stack" aria-label={`${membership.group.name} members`}>
+                  {membership.group.members.slice(0, 6).map((member) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={member.user.id}
+                      className="group-avatar"
+                      src={member.user.image ?? "/profile-pack/Phibi.png"}
+                      alt={member.user.name ?? member.user.email ?? "Group member avatar"}
+                      title={member.user.name ?? member.user.email ?? "Group member"}
+                    />
+                  ))}
+                  {membership.group.members.length > 6 ? (
+                    <span className="group-avatar-more" aria-label={`${membership.group.members.length - 6} more members`}>
+                      +{membership.group.members.length - 6}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
               <p className="muted">
                 {membership.group._count.members} members • {membership.group._count.discussions} chats
               </p>

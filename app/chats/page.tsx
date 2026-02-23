@@ -42,8 +42,11 @@ export default async function ChatsPage() {
             <Link className="button alt" href="/groups">Go to groups</Link>
           </article>
         ) : (
-          participations.map((item) => (
-            <article className="card" style={{ gridColumn: "span 6" }} key={item.discussionId}>
+          participations.map((item) => {
+            const isLocked = item.discussion.status === "ORDERED";
+
+            return (
+            <article className={`card${isLocked ? " discussion-card-locked" : ""}`} style={{ gridColumn: "span 6" }} key={item.discussionId}>
               <p className="badge">{item.discussion.status}</p>
               <h3>{item.discussion.title}</h3>
               <p className="muted">
@@ -52,9 +55,14 @@ export default async function ChatsPage() {
               <p className="muted">
                 Birthday in {daysUntil(item.discussion.eventDate)} days ({item.discussion.birthdayPerson.name ?? item.discussion.birthdayPerson.email})
               </p>
-              <Link className="button" href={`/discussions/${item.discussion.id}`}>Open chat</Link>
+              {isLocked ? (
+                <p className="muted discussion-locked-note">Celebrated. Chat closed.</p>
+              ) : (
+                <Link className="button" href={`/discussions/${item.discussion.id}`}>Open chat</Link>
+              )}
             </article>
-          ))
+          );
+          })
         )}
       </section>
     </main>

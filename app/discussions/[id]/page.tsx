@@ -55,6 +55,10 @@ export default async function DiscussionPage({ params }: { params: Promise<{ id:
     notFound();
   }
 
+  if (discussion.status === "ORDERED") {
+    notFound();
+  }
+
   return (
     <main>
       <section className="hero">

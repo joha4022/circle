@@ -28,6 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <div className="nav-links nav-tabs">
                   <Link className="tab-link" href="/groups">Groups</Link>
                   <Link className="tab-link" href="/chats">Chats</Link>
+                  <Link className="tab-link" href="/calendar">Calendar</Link>
                   {session?.user ? (
                     <UserMenu
                       userName={session.user.name ?? undefined}

@@ -4,7 +4,9 @@ const prisma = new PrismaClient();
 
 const OWNER_EMAIL = "joha4022@gmail.com";
 const GROUP_NAME = "QA Circle Test Group";
-const DISCUSSION_TITLE = "Mina's birthday gift plan (QA)";
+const MINA_EMAIL = "mina.qa.circle@gmail.com";
+const JORDAN_EMAIL = "jordan.qa.circle@gmail.com";
+const MINA_DISCUSSION_TITLE = "Mina's birthday gift plan (QA)";
 
 const TEST_USERS = [
   { email: "alex.qa.circle@gmail.com", name: "Alex Park", birthday: new Date("1994-03-18") },
@@ -57,93 +59,127 @@ async function main() {
     });
   }
 
-  const birthdayPerson = allMembers.find((u) => u.email === "mina.qa.circle@gmail.com");
-  if (!birthdayPerson) {
-    throw new Error("Birthday person missing from seeded members.");
-  }
+  const findDisplayName = (member) => member.name ?? member.email?.split("@")[0] ?? "Friend";
+  const eventBase = new Date();
+  const seededDiscussions = [];
 
-  const eventDate = new Date();
-  eventDate.setDate(eventDate.getDate() + 21);
+  for (let index = 0; index < allMembers.length; index += 1) {
+    const birthdayPerson = allMembers[index];
+    const displayName = findDisplayName(birthdayPerson);
+    const title = birthdayPerson.email === MINA_EMAIL
+      ? MINA_DISCUSSION_TITLE
+      : `${displayName}'s birthday gift plan (QA)`;
+    const eventDate = new Date(eventBase);
+    eventDate.setDate(eventDate.getDate() + 21 + (index * 7));
 
-  let discussion = await prisma.discussion.findFirst({
-    where: { groupId: group.id, title: DISCUSSION_TITLE }
-  });
-
-  if (!discussion) {
-    discussion = await prisma.discussion.create({
-      data: {
-        groupId: group.id,
-        birthdayPersonId: birthdayPerson.id,
-        eventDate,
-        title: DISCUSSION_TITLE,
-        status: "OPEN"
-      }
-    });
-  }
-
-  for (const member of allMembers) {
-    if (member.id === birthdayPerson.id) continue;
-
-    await prisma.discussionParticipant.upsert({
+    let discussion = await prisma.discussion.findFirst({
       where: {
-        discussionId_userId: { discussionId: discussion.id, userId: member.id }
-      },
-      update: {},
-      create: {
-        discussionId: discussion.id,
-        userId: member.id
+        groupId: group.id,
+        birthdayPersonId: birthdayPerson.id
       }
     });
-  }
 
-  const existingOptions = await prisma.giftOption.findMany({
-    where: { discussionId: discussion.id },
-    select: { title: true }
-  });
+    const status = birthdayPerson.email === JORDAN_EMAIL ? "ORDERED" : "OPEN";
 
-  const optionTitles = new Set(existingOptions.map((o) => o.title));
-  const newOptions = [
-    { title: "Polaroid camera", notes: "Mini bundle + film", estimatedCostCents: 9800 },
-    { title: "Spa day voucher", notes: "Local spa package", estimatedCostCents: 15500 },
-    { title: "Custom cake + dinner", notes: "Group celebration", estimatedCostCents: 12000 }
-  ].filter((o) => !optionTitles.has(o.title));
-
-  if (newOptions.length > 0) {
-    await prisma.giftOption.createMany({
-      data: newOptions.map((o) => ({ ...o, discussionId: discussion.id }))
-    });
-  }
-
-  const existingMessageCount = await prisma.message.count({ where: { discussionId: discussion.id } });
-
-  if (existingMessageCount === 0) {
-    const author = allMembers.find((m) => m.id === owner.id) ?? allMembers[0];
-    const lines = [
-      "Kicking off QA planning thread for Mina.",
-      "Let's keep budget around $120 total.",
-      "Vote by Friday so checkout can happen this weekend.",
-      "Please drop links and color preferences in this chat.",
-      "We can split payment once we pick the winner."
-    ];
-
-    for (const body of lines) {
-      await prisma.message.create({
+    if (!discussion) {
+      discussion = await prisma.discussion.create({
         data: {
+          groupId: group.id,
+          birthdayPersonId: birthdayPerson.id,
+          eventDate,
+          title,
+          status
+        }
+      });
+    } else {
+      discussion = await prisma.discussion.update({
+        where: { id: discussion.id },
+        data: { title, eventDate, status }
+      });
+    }
+
+    const expectedParticipantIds = new Set(
+      allMembers.filter((member) => member.id !== birthdayPerson.id).map((member) => member.id)
+    );
+
+    await prisma.discussionParticipant.deleteMany({
+      where: {
+        discussionId: discussion.id,
+        userId: { notIn: Array.from(expectedParticipantIds) }
+      }
+    });
+
+    for (const participantId of expectedParticipantIds) {
+      await prisma.discussionParticipant.upsert({
+        where: {
+          discussionId_userId: { discussionId: discussion.id, userId: participantId }
+        },
+        update: {},
+        create: {
           discussionId: discussion.id,
-          authorId: author.id,
-          body
+          userId: participantId
         }
       });
     }
+
+    const existingOptions = await prisma.giftOption.findMany({
+      where: { discussionId: discussion.id },
+      select: { title: true }
+    });
+
+    const optionTitles = new Set(existingOptions.map((o) => o.title));
+    const newOptions = [
+      { title: "Polaroid camera", notes: "Mini bundle + film", estimatedCostCents: 9800 },
+      { title: "Spa day voucher", notes: "Local spa package", estimatedCostCents: 15500 },
+      { title: "Custom cake + dinner", notes: "Group celebration", estimatedCostCents: 12000 }
+    ].filter((o) => !optionTitles.has(o.title));
+
+    if (newOptions.length > 0) {
+      await prisma.giftOption.createMany({
+        data: newOptions.map((o) => ({ ...o, discussionId: discussion.id }))
+      });
+    }
+
+    const existingMessageCount = await prisma.message.count({ where: { discussionId: discussion.id } });
+
+    if (existingMessageCount === 0) {
+      const author = allMembers.find((m) => m.id === owner.id && m.id !== birthdayPerson.id)
+        ?? allMembers.find((m) => m.id !== birthdayPerson.id)
+        ?? allMembers[0];
+      const lines = [
+        `Kicking off QA planning thread for ${displayName}.`,
+        "Let's keep budget around $120 total.",
+        "Vote by Friday so checkout can happen this weekend.",
+        "Please drop links and color preferences in this chat.",
+        "We can split payment once we pick the winner."
+      ];
+
+      for (const body of lines) {
+        await prisma.message.create({
+          data: {
+            discussionId: discussion.id,
+            authorId: author.id,
+            body
+          }
+        });
+      }
+    }
+
+    seededDiscussions.push({
+      id: discussion.id,
+      title,
+      status,
+      birthdayPersonEmail: birthdayPerson.email,
+      participantCount: expectedParticipantIds.size
+    });
   }
 
   console.log(JSON.stringify({
     ownerEmail: OWNER_EMAIL,
     groupId: group.id,
     groupName: GROUP_NAME,
-    discussionId: discussion.id,
-    discussionTitle: DISCUSSION_TITLE,
-    members: allMembers.map((m) => m.email)
+    members: allMembers.map((m) => m.email),
+    discussions: seededDiscussions
   }, null, 2));
 }
 

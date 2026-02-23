@@ -55,7 +55,26 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
     <main>
       <section className="hero">
         <p className="kicker">Group details</p>
-        <h1>{group.name}</h1>
+        <div className="group-hero-heading">
+          <h1>{group.name}</h1>
+          <div className="group-avatar-stack" aria-label={`${group.name} members`}>
+            {group.members.slice(0, 8).map((member) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={member.user.id}
+                className="group-avatar"
+                src={member.user.image ?? "/profile-pack/Phibi.png"}
+                alt={member.user.name ?? member.user.email ?? "Group member avatar"}
+                title={member.user.name ?? member.user.email ?? "Group member"}
+              />
+            ))}
+            {group.members.length > 8 ? (
+              <span className="group-avatar-more" aria-label={`${group.members.length - 8} more members`}>
+                +{group.members.length - 8}
+              </span>
+            ) : null}
+          </div>
+        </div>
         <p className="muted">Members: {group.members.map((m) => m.user.name ?? m.user.email).join(", ")}</p>
       </section>
 
@@ -64,19 +83,27 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
           <h2>Birthday planning threads</h2>
           <div className="grid">
             {visibleDiscussions.length === 0 ? <p className="muted">No discussions available for you right now.</p> : null}
-            {visibleDiscussions.map((d) => (
-              <div className="card" style={{ gridColumn: "span 6" }} key={d.id}>
+            {visibleDiscussions.map((d) => {
+              const isLocked = d.status === "ORDERED";
+
+              return (
+              <div className={`card${isLocked ? " discussion-card-locked" : ""}`} style={{ gridColumn: "span 6" }} key={d.id}>
                 <p className="badge">{d.status}</p>
                 <h3>{d.title}</h3>
                 <p className="muted" style={{ marginBottom: 0 }}>
                   For: {d.birthdayPerson.name ?? d.birthdayPerson.email} ({daysUntil(d.eventDate)} days)
                 </p>
                 <p className="muted">Gift options: {d.giftOptions.length}</p>
-                <Link className="button" href={`/discussions/${d.id}`}>
-                  Open discussion
-                </Link>
+                {isLocked ? (
+                  <p className="muted discussion-locked-note">Celebrated. Discussion closed.</p>
+                ) : (
+                  <Link className="button" href={`/discussions/${d.id}`}>
+                    Open discussion
+                  </Link>
+                )}
               </div>
-            ))}
+            );
+            })}
           </div>
         </article>
       </section>

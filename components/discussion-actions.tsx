@@ -174,6 +174,26 @@ export function DiscussionActions({
     );
   }
 
+  async function removeGiftOption(option: Option) {
+    const confirmed = window.confirm(`Remove "${option.title}" from the vote section?`);
+    if (!confirmed) return;
+
+    const res = await fetch(`/api/discussions/${discussionId}/options`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ giftOptionId: option.id })
+    });
+
+    if (!res.ok) {
+      const json = (await res.json().catch(() => ({}))) as { error?: string };
+      window.alert(json.error ?? "Couldn't remove this gift option. Please try again.");
+      return;
+    }
+
+    setGiftOptions((prev) => prev.filter((gift) => gift.id !== option.id));
+    router.refresh();
+  }
+
   return (
     <div className={mode === "chat" ? undefined : "grid"}>
       {showChatComposer ? (
@@ -282,6 +302,14 @@ export function DiscussionActions({
                         onClick={() => vote(option.id)}
                       >
                         {option.hasVoted ? "❤️" : "🤍"}
+                      </button>
+                      <button
+                        type="button"
+                        className="ghost"
+                        aria-label={`Remove ${option.title}`}
+                        onClick={() => removeGiftOption(option)}
+                      >
+                        X
                       </button>
                       <button
                         type="button"
