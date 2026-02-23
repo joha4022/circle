@@ -1,0 +1,41 @@
+[project]
+name = "circle"
+
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 6
+
+[agents.architect]
+description = "Plans features, defines data models, organizes tasks into small PRs."
+
+[agents.builder]
+description = "Implements approved plans with focused code changes and tests."
+
+[agents.reviewer]
+description = "Reviews diffs for bugs, regressions, and missing tests before merge."
+
+[agents.ops]
+description = "Handles CI/CD, scripts, deployment steps, and operational runbooks."
+
+[agents.prisma_data]
+description = "Owns Prisma schema, migrations, relations, and query correctness."
+
+[agents.auth_nextauth]
+description = "Owns NextAuth config, session handling, middleware, onboarding gating."
+
+[agents.api_routes]
+description = "Implements route handlers and server actions with validation and auth checks."
+
+[agents.frontend_ui]
+description = "Builds Next.js App Router pages, forms, navigation, and UX states."
+
+[agents.qa_tests]
+description = "Adds Playwright and unit tests for onboarding, address, and auth flows."
+
+[agents.reviewer_security]
+description = "Reviews code for security issues, auth bypass, and PII exposure."
+
+[agents.devops_ci]
+description = "Manages CI/CD, linting, testing, migrations in production."
